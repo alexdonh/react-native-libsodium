@@ -1,10 +1,23 @@
+import { StringOutputFormat, Uint8ArrayOutputFormat } from 'libsodium-wrappers';
 import { base64_variants } from './libsodium-js-utils';
 import type { OutputFormat } from './types';
 
 export function convertToOutputFormat(
   input: ArrayBuffer,
-  outputFormat: OutputFormat
-) {
+  outputFormat?: Uint8ArrayOutputFormat | null
+): Uint8Array;
+export function convertToOutputFormat(
+  input: ArrayBuffer,
+  outputFormat: StringOutputFormat
+): string;
+export function convertToOutputFormat(
+  input: ArrayBuffer,
+  outputFormat?: OutputFormat | null
+): string | Uint8Array;
+export function convertToOutputFormat(
+  input: ArrayBuffer,
+  outputFormat?: OutputFormat
+): string | Uint8Array {
   if (outputFormat === 'base64') {
     return global.jsi_to_base64(input, base64_variants.URLSAFE_NO_PADDING);
   }
