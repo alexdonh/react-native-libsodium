@@ -197,6 +197,7 @@ namespace ReactNativeLibsodium
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_box_SEEDBYTES", static_cast<int>(crypto_box_SEEDBYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_aead_xchacha20poly1305_ietf_KEYBYTES", static_cast<int>(crypto_aead_xchacha20poly1305_ietf_KEYBYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_aead_xchacha20poly1305_ietf_NPUBBYTES", static_cast<int>(crypto_aead_xchacha20poly1305_ietf_NPUBBYTES));
+        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_aead_xchacha20poly1305_ietf_ABYTES", static_cast<int>(crypto_aead_xchacha20poly1305_ietf_ABYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_kdf_KEYBYTES", static_cast<int>(crypto_kdf_KEYBYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_kdf_CONTEXTBYTES", static_cast<int>(crypto_kdf_CONTEXTBYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_generichash_BYTES", static_cast<int>(crypto_generichash_BYTES));
@@ -214,6 +215,7 @@ namespace ReactNativeLibsodium
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_kdf_hkdf_sha256_BYTES_MIN", static_cast<int>(crypto_kdf_hkdf_sha256_BYTES_MIN));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_kdf_hkdf_sha256_KEYBYTES", static_cast<int>(crypto_kdf_hkdf_sha256_KEYBYTES));
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_ALG_ARGON2ID13", static_cast<int>(crypto_pwhash_ALG_ARGON2ID13));
+        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_ALG_ARGON2I13", static_cast<int>(crypto_pwhash_ALG_ARGON2I13));
 
         auto jsi_from_base64_to_arraybuffer = jsi::Function::createFromHostFunction(
             jsiRuntime,
@@ -1197,6 +1199,150 @@ namespace ReactNativeLibsodium
 
         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash", std::move(jsi_crypto_pwhash));
 
+        auto jsi_crypto_pwhash_str = jsi::Function::createFromHostFunction(
+            jsiRuntime,
+            jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_pwhash_str"),
+            3,
+            [](jsi::Runtime &runtime, const jsi::Value &thisValue, const jsi::Value *arguments, size_t count) -> jsi::Value
+            {
+                const std::string functionName = "crypto_pwhash_str";
+
+                std::string passwordArgumentName = "password";
+                unsigned int passwordArgumentPosition = 0;
+                JsiArgType passwordArgType = validateIsStringOrArrayBuffer(functionName, runtime, arguments[passwordArgumentPosition], passwordArgumentName, true);
+
+                std::string opsLimitArgumentName = "opsLimit";
+                unsigned int opsLimitArgumentPosition = 1;
+                validateIsNumber(functionName, runtime, arguments[opsLimitArgumentPosition], opsLimitArgumentName, true);
+
+                std::string memLimitArgumentName = "memLimit";
+                unsigned int memLimitArgumentPosition = 2;
+                validateIsNumber(functionName, runtime, arguments[memLimitArgumentPosition], memLimitArgumentName, true);
+
+                unsigned long long opsLimit = static_cast<unsigned long long>(arguments[opsLimitArgumentPosition].asNumber());
+                size_t memLimit = static_cast<size_t>(arguments[memLimitArgumentPosition].asNumber());
+
+                char out[crypto_pwhash_STRBYTES];
+                int result = -1;
+
+                if (passwordArgType == JsiArgType::string)
+                {
+                    std::string passwordString = arguments[passwordArgumentPosition].asString(runtime).utf8(runtime);
+                    result = crypto_pwhash_str(
+                        out,
+                        reinterpret_cast<const char *>(passwordString.data()),
+                        static_cast<unsigned long long>(passwordString.length()),
+                        opsLimit,
+                        memLimit);
+                }
+                else
+                {
+                    auto passwordArrayBuffer =
+                        arguments[passwordArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
+                    result = crypto_pwhash_str(
+                        out,
+                        reinterpret_cast<const char *>(passwordArrayBuffer.data(runtime)),
+                        static_cast<unsigned long long>(passwordArrayBuffer.length(runtime)),
+                        opsLimit,
+                        memLimit);
+                }
+
+                throwOnBadResult(functionName, runtime, result);
+                return jsi::String::createFromUtf8(runtime, out);
+            });
+
+        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_str", std::move(jsi_crypto_pwhash_str));
+
+        auto jsi_crypto_pwhash_str_verify = jsi::Function::createFromHostFunction(
+            jsiRuntime,
+            jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_pwhash_str_verify"),
+            2,
+            [](jsi::Runtime &runtime, const jsi::Value &thisValue, const jsi::Value *arguments, size_t count) -> jsi::Value
+            {
+                const std::string functionName = "crypto_pwhash_str_verify";
+
+                std::string strArgumentName = "hashString";
+                unsigned int strArgumentPosition = 0;
+                validateRequired(functionName, runtime, arguments[strArgumentPosition], strArgumentName);
+
+                std::string passwordArgumentName = "password";
+                unsigned int passwordArgumentPosition = 1;
+                JsiArgType passwordArgType = validateIsStringOrArrayBuffer(functionName, runtime, arguments[passwordArgumentPosition], passwordArgumentName, true);
+
+                std::string hashString = arguments[strArgumentPosition].asString(runtime).utf8(runtime);
+
+                int result = -1;
+                if (passwordArgType == JsiArgType::string)
+                {
+                    std::string passwordString = arguments[passwordArgumentPosition].asString(runtime).utf8(runtime);
+                    result = crypto_pwhash_str_verify(
+                        reinterpret_cast<const char *>(hashString.data()),
+                        reinterpret_cast<const char *>(passwordString.data()),
+                        static_cast<unsigned long long>(passwordString.length()));
+                }
+                else
+                {
+                    auto passwordArrayBuffer =
+                        arguments[passwordArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
+                    result = crypto_pwhash_str_verify(
+                        reinterpret_cast<const char *>(hashString.data()),
+                        reinterpret_cast<const char *>(passwordArrayBuffer.data(runtime)),
+                        static_cast<unsigned long long>(passwordArrayBuffer.length(runtime)));
+                }
+
+                if (result == 0)
+                {
+                    return jsi::Value(true);
+                }
+                else if (result == -1)
+                {
+                    std::string errorMessage = "[react-native-libsodium][" + functionName + "] " + functionName + " failed";
+                    throw jsi::JSError(runtime, errorMessage);
+                }
+                return jsi::Value(false);
+            });
+
+        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_str_verify", std::move(jsi_crypto_pwhash_str_verify));
+
+        auto jsi_crypto_pwhash_str_needs_rehash = jsi::Function::createFromHostFunction(
+            jsiRuntime,
+            jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_pwhash_str_needs_rehash"),
+            3,
+            [](jsi::Runtime &runtime, const jsi::Value &thisValue, const jsi::Value *arguments, size_t count) -> jsi::Value
+            {
+                const std::string functionName = "crypto_pwhash_str_needs_rehash";
+
+                std::string strArgumentName = "hashString";
+                unsigned int strArgumentPosition = 0;
+                validateRequired(functionName, runtime, arguments[strArgumentPosition], strArgumentName);
+
+                std::string opsLimitArgumentName = "opsLimit";
+                unsigned int opsLimitArgumentPosition = 1;
+                validateIsNumber(functionName, runtime, arguments[opsLimitArgumentPosition], opsLimitArgumentName, true);
+
+                std::string memLimitArgumentName = "memLimit";
+                unsigned int memLimitArgumentPosition = 2;
+                validateIsNumber(functionName, runtime, arguments[memLimitArgumentPosition], memLimitArgumentName, true);
+
+                std::string hashString = arguments[strArgumentPosition].asString(runtime).utf8(runtime);
+                unsigned long long opsLimit = static_cast<unsigned long long>(arguments[opsLimitArgumentPosition].asNumber());
+                size_t memLimit = static_cast<size_t>(arguments[memLimitArgumentPosition].asNumber());
+
+                int result = crypto_pwhash_str_needs_rehash(
+                    reinterpret_cast<const char *>(hashString.data()),
+                    opsLimit,
+                    memLimit);
+
+                if (result == -1)
+                {
+                    std::string errorMessage = "[react-native-libsodium][" + functionName + "] " + functionName + " failed";
+                    throw jsi::JSError(runtime, errorMessage);
+                }
+                return jsi::Value(result == 1);
+            });
+
+        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_str_needs_rehash", std::move(jsi_crypto_pwhash_str_needs_rehash));
+
         auto jsi_crypto_sign_ed25519_pk_to_curve25519 = jsi::Function::createFromHostFunction(
             jsiRuntime,
             jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_sign_ed25519_pk_to_curve25519"),
@@ -1295,7 +1441,7 @@ namespace ReactNativeLibsodium
 
                 std::string additionalDataArgumentName = "additionalData";
                 unsigned int additionalDataArgumentPosition = 1;
-                validateIsString(functionName, runtime, arguments[additionalDataArgumentPosition], additionalDataArgumentName, true);
+                JsiArgType additionalDataArgType = validateIsStringOrArrayBuffer(functionName, runtime, arguments[additionalDataArgumentPosition], additionalDataArgumentName, false);
 
                 std::string publicNonceArgumentName = "public_nonce";
                 unsigned int publicNonceArgumentPosition = 2;
@@ -1305,7 +1451,25 @@ namespace ReactNativeLibsodium
                 unsigned int keyArgumentPosition = 3;
                 validateIsArrayBuffer(functionName, runtime, arguments[keyArgumentPosition], keyArgumentName, true);
 
-                std::string additionalData = arguments[additionalDataArgumentPosition].asString(runtime).utf8(runtime);
+                std::string additionalData;
+                std::vector<uint8_t> additionalDataVector;
+                const unsigned char *ad_ptr = nullptr;
+                unsigned long long ad_len = 0ULL;
+                if (!arguments[additionalDataArgumentPosition].isUndefined() && !arguments[additionalDataArgumentPosition].isNull())
+                {
+                    if (additionalDataArgType == JsiArgType::string)
+                    {
+                        additionalData = arguments[additionalDataArgumentPosition].asString(runtime).utf8(runtime);
+                        ad_ptr = reinterpret_cast<const unsigned char *>(additionalData.data());
+                        ad_len = static_cast<unsigned long long>(additionalData.length());
+                    }
+                    else if (additionalDataArgType == JsiArgType::arrayBuffer)
+                    {
+                        auto additionalDataArrayBuffer = arguments[additionalDataArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
+                        ad_ptr = additionalDataArrayBuffer.data(runtime);
+                        ad_len = static_cast<unsigned long long>(additionalDataArrayBuffer.length(runtime));
+                    }
+                }
                 auto publicNonceArrayBuffer =
                     arguments[publicNonceArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
                 auto keyArrayBuffer =
@@ -1333,8 +1497,8 @@ namespace ReactNativeLibsodium
                         &ciphertextLength,
                         reinterpret_cast<const unsigned char *>(messageString.data()),
                         messageString.length(),
-                        reinterpret_cast<const unsigned char *>(additionalData.data()),
-                        additionalData.length(),
+                        ad_ptr,
+                        ad_len,
                         NULL,
                         publicNonceArrayBuffer.data(runtime),
                         keyArrayBuffer.data(runtime));
@@ -1350,8 +1514,8 @@ namespace ReactNativeLibsodium
                         &ciphertextLength,
                         messageArrayBuffer.data(runtime),
                         messageArrayBuffer.length(runtime),
-                        reinterpret_cast<const unsigned char *>(additionalData.data()),
-                        additionalData.length(),
+                        ad_ptr,
+                        ad_len,
                         NULL,
                         publicNonceArrayBuffer.data(runtime),
                         keyArrayBuffer.data(runtime));
@@ -1377,7 +1541,7 @@ namespace ReactNativeLibsodium
 
                 std::string additionalDataArgumentName = "additionalData";
                 unsigned int additionalDataArgumentPosition = 1;
-                validateIsString(functionName, runtime, arguments[additionalDataArgumentPosition], additionalDataArgumentName, true);
+                JsiArgType additionalDataArgType = validateIsStringOrArrayBuffer(functionName, runtime, arguments[additionalDataArgumentPosition], additionalDataArgumentName, false);
 
                 std::string publicNonceArgumentName = "public_nonce";
                 unsigned int publicNonceArgumentPosition = 2;
@@ -1387,7 +1551,24 @@ namespace ReactNativeLibsodium
                 unsigned int keyArgumentPosition = 3;
                 validateIsArrayBuffer(functionName, runtime, arguments[keyArgumentPosition], keyArgumentName, true);
 
-                std::string additionalData = arguments[additionalDataArgumentPosition].asString(runtime).utf8(runtime);
+                std::string additionalData;
+                const unsigned char *ad_ptr = nullptr;
+                unsigned long long ad_len = 0ULL;
+                if (!arguments[additionalDataArgumentPosition].isUndefined() && !arguments[additionalDataArgumentPosition].isNull())
+                {
+                    if (additionalDataArgType == JsiArgType::string)
+                    {
+                        additionalData = arguments[additionalDataArgumentPosition].asString(runtime).utf8(runtime);
+                        ad_ptr = reinterpret_cast<const unsigned char *>(additionalData.data());
+                        ad_len = static_cast<unsigned long long>(additionalData.length());
+                    }
+                    else if (additionalDataArgType == JsiArgType::arrayBuffer)
+                    {
+                        auto additionalDataArrayBuffer = arguments[additionalDataArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
+                        ad_ptr = additionalDataArrayBuffer.data(runtime);
+                        ad_len = static_cast<unsigned long long>(additionalDataArrayBuffer.length(runtime));
+                    }
+                }
                 auto publicNonceArrayBuffer =
                     arguments[publicNonceArgumentPosition].asObject(runtime).getArrayBuffer(runtime);
                 auto keyArrayBuffer =
@@ -1416,8 +1597,8 @@ namespace ReactNativeLibsodium
                         NULL,
                         reinterpret_cast<const unsigned char *>(ciphertextString.data()),
                         ciphertextString.length(),
-                        reinterpret_cast<const unsigned char *>(additionalData.data()),
-                        additionalData.length(),
+                        ad_ptr,
+                        ad_len,
                         publicNonceArrayBuffer.data(runtime),
                         keyArrayBuffer.data(runtime));
                 }
@@ -1433,8 +1614,8 @@ namespace ReactNativeLibsodium
                         NULL,
                         ciphertextArrayBuffer.data(runtime),
                         ciphertextArrayBuffer.length(runtime),
-                        reinterpret_cast<const unsigned char *>(additionalData.data()),
-                        additionalData.length(),
+                        ad_ptr,
+                        ad_len,
                         publicNonceArrayBuffer.data(runtime),
                         keyArrayBuffer.data(runtime));
                 }

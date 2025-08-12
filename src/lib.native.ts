@@ -33,6 +33,7 @@ declare global {
   var jsi_crypto_box_SEEDBYTES: number;
   var jsi_crypto_aead_xchacha20poly1305_ietf_KEYBYTES: number;
   var jsi_crypto_aead_xchacha20poly1305_ietf_NPUBBYTES: number;
+  var jsi_crypto_aead_xchacha20poly1305_ietf_ABYTES: number;
   var jsi_crypto_kdf_KEYBYTES: number;
   var jsi_crypto_kdf_CONTEXTBYTES: number;
   var jsi_crypto_generichash_BYTES: number;
@@ -52,15 +53,16 @@ declare global {
   var jsi_crypto_kdf_hkdf_sha256_BYTES_MIN: number;
   var jsi_crypto_kdf_hkdf_sha256_KEYBYTES: number;
   var jsi_crypto_pwhash_ALG_ARGON2ID13: number;
+  var jsi_crypto_pwhash_ALG_ARGON2I13: number;
 
   function jsi_crypto_auth(
-    message: string | ArrayBuffer,
-    key: ArrayBuffer
+    message: string | ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_auth_verify(
-    tag: ArrayBuffer,
-    message: string | ArrayBuffer,
-    key: ArrayBuffer
+    tag: ArrayBufferLike,
+    message: string | ArrayBufferLike,
+    key: ArrayBufferLike
   ): boolean;
   function jsi_crypto_auth_keygen(): ArrayBuffer;
   function jsi_from_base64_to_arraybuffer(
@@ -68,10 +70,10 @@ declare global {
     variant?: base64_variants
   ): ArrayBuffer;
   function jsi_to_base64(
-    input: string | ArrayBuffer,
+    input: string | ArrayBufferLike,
     variant: base64_variants
   ): string;
-  function jsi_to_hex(input: string | ArrayBuffer): string;
+  function jsi_to_hex(input: string | ArrayBufferLike): string;
   function jsi_randombytes_buf(length: number): ArrayBuffer;
   function jsi_randombytes_uniform(upper_bound: number): number;
   function jsi_crypto_secretbox_keygen(): ArrayBuffer;
@@ -81,7 +83,7 @@ declare global {
     publicKey: ArrayBuffer;
     secretKey: ArrayBuffer;
   };
-  function jsi_crypto_box_seed_keypair(seed: ArrayBuffer): {
+  function jsi_crypto_box_seed_keypair(seed: ArrayBufferLike): {
     publicKey: ArrayBuffer;
     secretKey: ArrayBuffer;
   };
@@ -89,96 +91,110 @@ declare global {
     publicKey: ArrayBuffer;
     secretKey: ArrayBuffer;
   };
-  function jsi_crypto_sign_seed_keypair(seed: ArrayBuffer): {
+  function jsi_crypto_sign_seed_keypair(seed: ArrayBufferLike): {
     publicKey: ArrayBuffer;
     secretKey: ArrayBuffer;
   };
   function jsi_crypto_sign_detached(
-    message: string | ArrayBuffer,
-    privateKey: ArrayBuffer
+    message: string | ArrayBufferLike,
+    privateKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_sign_verify_detached(
-    signature: ArrayBuffer,
-    message: string | ArrayBuffer,
-    publicKey: ArrayBuffer
+    signature: ArrayBufferLike,
+    message: string | ArrayBufferLike,
+    publicKey: ArrayBufferLike
   ): boolean;
   function jsi_crypto_secretbox_easy(
-    message: string | ArrayBuffer,
-    nonce: ArrayBuffer,
-    key: ArrayBuffer
+    message: string | ArrayBufferLike,
+    nonce: ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_secretbox_open_easy(
-    ciphertext: string | ArrayBuffer,
-    nonce: ArrayBuffer,
-    key: ArrayBuffer
+    ciphertext: string | ArrayBufferLike,
+    nonce: ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_box_easy(
-    message: string | ArrayBuffer,
-    nonce: ArrayBuffer,
-    publicKey: ArrayBuffer,
-    secretKey: ArrayBuffer
+    message: string | ArrayBufferLike,
+    nonce: ArrayBufferLike,
+    publicKey: ArrayBufferLike,
+    secretKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_box_open_easy(
-    ciphertext: string | ArrayBuffer,
-    nonce: ArrayBuffer,
-    publicKey: ArrayBuffer,
-    secretKey: ArrayBuffer
+    ciphertext: string | ArrayBufferLike,
+    nonce: ArrayBufferLike,
+    publicKey: ArrayBufferLike,
+    secretKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_box_seal(
-    message: string | ArrayBuffer,
-    publicKey: ArrayBuffer
+    message: string | ArrayBufferLike,
+    publicKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_box_seal_open(
-    ciphertext: string | ArrayBuffer,
-    publicKey: ArrayBuffer,
-    secretKey: ArrayBuffer
+    ciphertext: string | ArrayBufferLike,
+    publicKey: ArrayBufferLike,
+    secretKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_generichash(
     hashLength: number,
-    message: string | ArrayBuffer,
-    key?: ArrayBuffer | null | undefined
+    message: string | ArrayBufferLike,
+    key?: ArrayBufferLike | null | undefined
   ): ArrayBuffer;
   function jsi_crypto_pwhash(
     keyLength: number,
-    password: string | ArrayBuffer,
-    salt: ArrayBuffer,
+    password: string | ArrayBufferLike,
+    salt: ArrayBufferLike,
     opsLimit: number,
     memLimit: number,
     algorithm: number
   ): ArrayBuffer;
+  function jsi_crypto_pwhash_str(
+    password: string | ArrayBufferLike,
+    opsLimit: number,
+    memLimit: number
+  ): string;
+  function jsi_crypto_pwhash_str_verify(
+    hashString: string,
+    password: string | ArrayBufferLike
+  ): boolean;
+  function jsi_crypto_pwhash_str_needs_rehash(
+    hashString: string,
+    opsLimit: number,
+    memLimit: number
+  ): boolean;
   function jsi_crypto_sign_ed25519_pk_to_curve25519(
-    publicKey: ArrayBuffer
+    publicKey: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_kdf_derive_from_key(
     subkeyLength: number,
     subkeyId: number,
     context: string,
-    key: ArrayBuffer
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_aead_xchacha20poly1305_ietf_encrypt(
-    message: string | ArrayBuffer,
-    additionalData: string,
-    public_nonce: ArrayBuffer,
-    key: ArrayBuffer
+    message: string | ArrayBufferLike,
+    additionalData: string | ArrayBufferLike,
+    public_nonce: ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_aead_xchacha20poly1305_ietf_decrypt(
-    ciphertext: string | ArrayBuffer,
-    additionalData: string,
-    public_nonce: ArrayBuffer,
-    key: ArrayBuffer
+    ciphertext: string | ArrayBufferLike,
+    additionalData: string | ArrayBufferLike,
+    public_nonce: ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_aead_xchacha20poly1305_ietf_decrypt(
-    ciphertext: string | ArrayBuffer,
-    additionalData: string,
-    public_nonce: ArrayBuffer,
-    key: ArrayBuffer
+    ciphertext: string | ArrayBufferLike,
+    additionalData: string | ArrayBufferLike,
+    public_nonce: ArrayBufferLike,
+    key: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_kdf_hkdf_sha256_extract(
-    key: ArrayBuffer,
-    salt: ArrayBuffer
+    key: ArrayBufferLike,
+    salt: ArrayBufferLike
   ): ArrayBuffer;
   function jsi_crypto_kdf_hkdf_sha256_expand(
-    key: ArrayBuffer,
+    key: ArrayBufferLike,
     info: string,
     length: number
   ): ArrayBuffer;
@@ -197,6 +213,8 @@ export const crypto_aead_xchacha20poly1305_ietf_KEYBYTES =
   global.jsi_crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
 export const crypto_aead_xchacha20poly1305_ietf_NPUBBYTES =
   global.jsi_crypto_aead_xchacha20poly1305_ietf_NPUBBYTES;
+export const crypto_aead_xchacha20poly1305_ietf_ABYTES =
+  global.jsi_crypto_aead_xchacha20poly1305_ietf_ABYTES;
 export const crypto_kdf_KEYBYTES = global.jsi_crypto_kdf_KEYBYTES;
 export const crypto_kdf_CONTEXTBYTES = global.jsi_crypto_kdf_CONTEXTBYTES;
 export const crypto_generichash_BYTES = global.jsi_crypto_generichash_BYTES;
@@ -227,6 +245,8 @@ export const _unstable_crypto_kdf_hkdf_sha256_KEYBYTES =
   global.jsi_crypto_kdf_hkdf_sha256_KEYBYTES;
 export const crypto_pwhash_ALG_ARGON2ID13 =
   global.jsi_crypto_pwhash_ALG_ARGON2ID13;
+export const crypto_pwhash_ALG_ARGON2I13 =
+  global.jsi_crypto_pwhash_ALG_ARGON2I13;
 
 export const from_base64 = (
   input: string,
@@ -691,6 +711,37 @@ export function crypto_pwhash(
   );
   return convertToOutputFormat(result, outputFormat);
 }
+
+export function crypto_pwhash_str(
+  password: string | Uint8Array,
+  opsLimit: number,
+  memLimit: number
+) {
+  const passwordParam =
+    typeof password === 'string' ? password : password.buffer;
+  return global.jsi_crypto_pwhash_str(passwordParam, opsLimit, memLimit);
+}
+
+export function crypto_pwhash_str_verify(
+  hashString: string,
+  password: string | Uint8Array
+) {
+  const passwordParam =
+    typeof password === 'string' ? password : password.buffer;
+  return global.jsi_crypto_pwhash_str_verify(hashString, passwordParam);
+}
+
+export function crypto_pwhash_str_needs_rehash(
+  hashString: string,
+  opsLimit: number,
+  memLimit: number
+) {
+  return global.jsi_crypto_pwhash_str_needs_rehash(
+    hashString,
+    opsLimit,
+    memLimit
+  );
+}
 export function crypto_sign_ed25519_pk_to_curve25519(
   publicKey: Uint8Array,
   outputFormat?: Uint8ArrayOutputFormat | null
@@ -757,14 +808,15 @@ export function crypto_aead_xchacha20poly1305_ietf_encrypt(
 ) {
   let result: ArrayBuffer;
   const messageParam = typeof message === 'string' ? message : message.buffer;
-  if (typeof additional_data !== 'string') {
-    throw new Error(
-      'crypto_aead_xchacha20poly1305_ietf_encrypt: input type not yet implemented'
-    );
-  }
+  const additionalDataParam =
+    additional_data == null
+      ? undefined
+      : typeof additional_data === 'string'
+      ? additional_data
+      : additional_data.buffer;
   result = global.jsi_crypto_aead_xchacha20poly1305_ietf_encrypt(
     messageParam,
-    additional_data,
+    additionalDataParam as any,
     public_nonce.buffer,
     key.buffer
   );
@@ -796,21 +848,17 @@ export function crypto_aead_xchacha20poly1305_ietf_decrypt(
   outputFormat: OutputFormat
 ) {
   let result: ArrayBuffer;
-  if (typeof ciphertext === 'string') {
-    throw new Error(
-      'crypto_aead_xchacha20poly1305_ietf_decrypt: input type not yet implemented'
-    );
-  }
-  if (typeof additional_data !== 'string') {
-    throw new Error(
-      'crypto_aead_xchacha20poly1305_ietf_decrypt: input type not yet implemented'
-    );
-  }
   const ciphertextParam =
     typeof ciphertext === 'string' ? ciphertext : ciphertext.buffer;
+  const additionalDataParam =
+    additional_data == null
+      ? undefined
+      : typeof additional_data === 'string'
+      ? additional_data
+      : additional_data.buffer;
   result = global.jsi_crypto_aead_xchacha20poly1305_ietf_decrypt(
     ciphertextParam,
-    additional_data,
+    additionalDataParam as any,
     public_nonce.buffer,
     key.buffer
   );
@@ -853,6 +901,7 @@ export default {
   crypto_aead_xchacha20poly1305_ietf_KEYBYTES,
   crypto_aead_xchacha20poly1305_ietf_keygen,
   crypto_aead_xchacha20poly1305_ietf_NPUBBYTES,
+  crypto_aead_xchacha20poly1305_ietf_ABYTES,
   crypto_box_easy,
   crypto_box_seed_keypair,
   crypto_box_keypair,
@@ -879,6 +928,7 @@ export default {
   crypto_pwhash_MEMLIMIT_INTERACTIVE,
   crypto_pwhash_OPSLIMIT_INTERACTIVE,
   crypto_pwhash_SALTBYTES,
+  crypto_pwhash_ALG_ARGON2I13,
   crypto_pwhash_ALG_ARGON2ID13,
   crypto_secretbox_easy,
   crypto_secretbox_KEYBYTES,
